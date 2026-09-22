@@ -1,0 +1,15 @@
+{
+  "modes_per_shift": 8,
+  "max_shifts": 12,
+  "max_seconds": 180.0,
+  "maxiter": 1500,
+  "eigen_tol": 1e-9,
+  "residual_tol": 1e-7,
+  "cluster_ratio": 1.15,
+  "participation_min": 0.15,
+  "max_member_dofs": 160,
+  "rhs_block": 16,
+  "dense_limit": 768,
+  "random_seed": 1729,
+  "shifts": {}
+}

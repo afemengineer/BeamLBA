@@ -124,7 +124,8 @@ def pack_matrix_market(k_path: str, g_path: str, specification: str, output: str
     if "native_values" in arrays and "native_vectors" in arrays:
         native = arrays["native_values"], arrays["native_vectors"]
     if "native_vectors_mtx" in spec:
-        vectors = np.asarray(mmread(safe_path(path.parent, spec["native_vectors_mtx"])))
+        raw = mmread(safe_path(path.parent, spec["native_vectors_mtx"]))
+        vectors = raw.toarray() if sparse.issparse(raw) else np.asarray(raw)
         native = np.asarray(spec["native_values"], dtype=float), vectors
     metadata = dict(spec["metadata"])
     metadata["import_g_sign"] = g_sign

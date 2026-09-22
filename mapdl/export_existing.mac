@@ -1,0 +1,23 @@
+! BeamLBA experimental export helper - execute in an ISOLATED scratch session.
+! Copy matching, preserved buckling file.full and file.mode into that directory.
+! Does not SOLVE, RESUME, change KEYOPTs, or modify the original Mechanical model.
+! The analysis stage and interpretation MUST be established by native parity.
+! In the appropriate buckling FULL file, MASS stores stress stiffness, NOT mass.
+! WRFULL is deliberately absent: it is unsupported in linear perturbation.
+! See docs/ANSYS_INTEGRATION.md. This macro has not been run in licensed ANSYS.
+
+*SMAT,BLK,D,IMPORT,FULL,file.full,STIFF
+*SMAT,BLG,D,IMPORT,FULL,file.full,MASS
+*EXPORT,BLK,MMF,bl_k.mtx
+*EXPORT,BLG,MMF,bl_g.mtx
+
+! MODE vectors are internal-order, not solver-order. Transform before exporting.
+! Do not export NOD2SOLV directly: *EXPORT does not support that source matrix.
+*SMAT,BLMAP,D,IMPORT,FULL,file.full,NOD2SOLV
+*DMAT,BLPHI,D,IMPORT,MODE,file.mode
+*MULT,BLMAP,,BLPHI,,BLPS
+*EXPORT,BLPS,MMF,bl_native.mtx
+
+! Associate columns with the actual signed native buckling multipliers.
+! This helper does NOT extract member element matrices, resolve element/solver
+! transformations, or invent missing native multipliers. Those are release gates.

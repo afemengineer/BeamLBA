@@ -69,7 +69,9 @@ def assess(pencil: Pencil, shifts: dict[str, float] | None = None,
             prediction, seed = ((float(overrides[member.name]), None) if member.name in overrides
                                 else pencil.predict(member))
             rows[member.name]["predictor"] = prediction
-            candidates.append((prediction, member.name, seed))
+            # Store only local support values, not one full-frame vector per member.
+            local_seed = None if seed is None else seed[member.dofs].copy()
+            candidates.append((prediction, member.name, local_seed))
         except (InvalidModel, linalg.LinAlgError, RuntimeError) as exc:
             rows[member.name]["notes"].append(str(exc))
     clusters: list[list] = []
@@ -87,7 +89,10 @@ def assess(pencil: Pencil, shifts: dict[str, float] | None = None,
         # A tiny detuning avoids factoring exactly at a predicted pole. A large
         # relative offset would miss targets in a densely populated spectrum.
         shift = float(np.exp(np.mean(np.log([p[0] for p in group]))) * (1 - 1e-5))
-        seed = sum((p[2] for p in group if p[2] is not None), np.zeros(pencil.n))
+        seed = np.zeros(pencil.n)
+        for _, name, local_seed in group:
+            if local_seed is not None:
+                seed[by_name[name].dofs] += local_seed
         entry = {"shift": shift, "members": [p[1] for p in group], "phase": phase}
         searches.append(entry)
         try:
